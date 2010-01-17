@@ -1,8 +1,9 @@
 #!/usr/bin/env ruby
 require 'find'
 require 'Qt4'
+require_relative 'image_preview.rb'
 
-class ImageList < Qt::ScrollArea
+class ImageList < Qt::Widget
   include Enumerable
   signals 'imageAdded()', 'newNumImages(int)', 'doneLoading()', 'newImage(QString)'
   slots 'addImage(QString)'
@@ -13,7 +14,8 @@ class ImageList < Qt::ScrollArea
     @row = 0
     @column = -1
 
-    @layout = Qt::GridLayout.new
+    resize(500,500)
+    @layout = Qt::GridLayout.new()
     setLayout(@layout)
 
     @update_timer = Qt::Timer.new(self)
@@ -33,19 +35,15 @@ class ImageList < Qt::ScrollArea
   end
 
   def addImage(path)
-    preview = Qt::Label.new
-    preview.setPixmap(Qt::Pixmap.new(path))
-    preview.setScaledContents(true)
-
+    preview = ImagePreview.new(path)
     if @column == 2
       @row += 1
       @column = 0
     else
       @column += 1
     end
-
     @layout.addWidget(preview, @row, @column)
-    preview.adjustSize()
+
     @images << path
 
     emit imageAdded()
