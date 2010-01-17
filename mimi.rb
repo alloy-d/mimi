@@ -4,7 +4,13 @@ require_relative 'importer.rb'
 
 app = Qt::Application.new(ARGV)
 
-importer = Importer.new('/home/adam/images/backgrounds/non-ifl/cbs_pww')
+base_directory = ARGV[0]
+if base_directory.nil?
+  STDERR.puts "Please specify a directory."
+  exit 1
+end
+
+importer = Importer.new(base_directory)
 importer.show()
 
 app.exec()
