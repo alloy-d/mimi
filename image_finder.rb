@@ -1,6 +1,7 @@
 #!/usr/bin/env ruby
 require 'exifr'
 require 'find'
+require_relative 'image.rb'
 
 class ImageFinder
   include Enumerable
