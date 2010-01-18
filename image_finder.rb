@@ -12,7 +12,7 @@ class ImageFinder
     Find.find(directory) do |file|
       if file.downcase =~ /\.jpg$/
         @images << Image.new(file)
-        puts "Found #{file}"
+        yield file
       end
     end
   end
