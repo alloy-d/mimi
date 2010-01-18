@@ -10,7 +10,7 @@ class ImageFinder
 
     Find.find(directory) do |file|
       if file.downcase =~ /\.jpg$/
-        @images << file
+        @images << Image.new(file)
         puts "Found #{file}"
       end
     end
