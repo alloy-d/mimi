@@ -24,7 +24,7 @@ class ImageList < Qt::Widget
     connect(self, SIGNAL('imageAdded()'),
             self, SLOT('update()'))
 
-    @thread = Thread.new(directory) do |dir|
+    @thread = Thread.new(directory) do |directory|
       Find.find(directory) do |file|
         emit newImage(file) if file.downcase =~ /.jpg$/
         puts file
