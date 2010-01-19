@@ -3,56 +3,53 @@ require 'find'
 require 'Qt4'
 require_relative 'image_preview.rb'
 
-class ImageList < Qt::Widget
-  include Enumerable
-  signals 'imageAdded()', 'newNumImages(int)', 'doneLoading()', 'newImage(QString)'
+class ImageList < Qt::GraphicsView
   slots 'addImage(QString)'
 
-  def initialize(directory, parent=nil)
-    super(parent)
+  def initialize()
+    super
     @images = []
     @row = 0
     @column = -1
+    @spacing = 5
 
-    resize(500,500)
-    @layout = Qt::GridLayout.new()
-    setLayout(@layout)
+    @scene = Qt::GraphicsScene.new()
+    @widget = Qt::GraphicsWidget.new()
+#    @scene.resize(500,500)
+    @layout = Qt::GraphicsGridLayout.new()
+    [0,1].each {|c| @layout.setColumnAlignment(c, Qt::AlignCenter)}
 
-    @update_timer = Qt::Timer.new(self)
-    connect(self, SIGNAL('newImage(QString)'),
-            self, SLOT('addImage(QString)'))
-    connect(self, SIGNAL('imageAdded()'),
-            self, SLOT('update()'))
-
-    @thread = Thread.new(directory) do |directory|
-      Find.find(directory) do |file|
-        emit newImage(file) if file.downcase =~ /\.jpg$/
-        puts file
-      end
-
-      emit doneLoading()
+    @layout.setRowAlignment(0, Qt::AlignCenter)
+    @widget.setLayout(@layout)
+    @scene.addItem(@widget)
+    @widget.setMinimumSize(500, 250)
+    setScene(@scene)
+    [@widget].each do |i|
+      i.setMinimumSize(200, 250)
+      i.setPreferredSize(200, 250)
+      i.setMaximumSize(200, 250)
     end
+
   end
 
   def addImage(path)
     preview = ImagePreview.new(path)
-    if @column == 2
+    if @column == 1
       @row += 1
+      @layout.setRowAlignment(@row, Qt::AlignCenter)
       @column = 0
     else
       @column += 1
     end
-    @layout.addWidget(preview, @row, @column)
-
-    @images << path
-
-    emit imageAdded()
-    emit newNumImages(@images.count)
+    @layout.addItem(preview, @row, @column, Qt::AlignCenter)
   end
 
-  def each
-    @images.each do |image|
-      yield image
-    end
+  def resizeEvent(event)
+    @widget.setMinimumSize(event.size.width - 1,
+                           (ImagePreview.max_height + @spacing) * @row)
+    @widget.setPreferredSize(event.size.width - 1,
+                             (ImagePreview.max_height + @spacing) * @row)
+    @widget.setMaximumSize(event.size.width - 1,
+                           (ImagePreview.max_height + @spacing) * @row)
   end
 end
