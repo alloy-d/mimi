@@ -29,7 +29,7 @@ class ImageList < Qt::GraphicsView
       i.setPreferredSize(200, 250)
       i.setMaximumSize(200, 250)
     end
-
+    setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff)
   end
 
   def addImage(path)
