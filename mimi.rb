@@ -1,10 +1,13 @@
 #!/usr/bin/env ruby
-# require 'Qt4'
-# require_relative 'importer.rb'
+require 'Qt4'
+require_relative 'qt/importer.rb'
 require_relative 'image_finder.rb'
 require_relative 'image_importer.rb'
 
-# app = Qt::Application.new(ARGV)
+ui = ARGV.shift
+if ui == 'qt'
+  app = Qt::Application.new(ARGV)
+end
 
 from_directory = ARGV[0]
 if from_directory.nil?
@@ -17,12 +20,14 @@ if to_directory.nil?
   exit 2
 end
 
-# importer = Importer.new(base_directory)
-# importer.show()
+if ui == 'qt'
+  importer = Importer.new(from_directory, to_directory)
+  importer.show()
 
-# app.exec()
+  app.exec()
+else
+  finder = ImageFinder.new(from_directory) {|file| puts "Found #{file}"}
 
-finder = ImageFinder.new(from_directory) {|file| puts "Found #{file}"}
-
-importer = ImageImporter.new(finder, to_directory, true)
-importer.go(true)
+  importer = ImageImporter.new(finder, to_directory, true)
+  importer.go(true) {|old, new| puts "#{old} -> #{new}"}
+end
