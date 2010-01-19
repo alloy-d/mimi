@@ -1,25 +1,52 @@
 #!/usr/bin/env ruby
 require 'Qt4'
 
-class ImagePreview < Qt::Widget
-  def initialize(path, parent=nil)
-    super(parent)
+class ImagePreview < Qt::GraphicsWidget
+  @@max_width = 200
 
+  def initialize(path)
+    super()
+
+    @bg_color = Qt::Color.new(rand(255), rand(255), rand(255))
     image = Qt::Image.new(path)
-    preview = image.scaled(300, 300, Qt::KeepAspectRatio,
+    @preview = image.scaled(@@max_width,
+                           @@max_width * 3/4,
+                           Qt::KeepAspectRatio,
                            Qt::SmoothTransformation)
-    @pixmap = Qt::Pixmap.fromImage(preview)
+    self.setPreferredSize(@@max_width, @@max_width * 3/4)
   end
 
-  def paintEvent(event)
-    painter = Qt::Painter.new(self)
-    pixmap = @pixmap.scaled(size(), Qt::KeepAspectRatio,
-                            Qt::SmoothTransformation)
+  def self.max_width
+    @@max_width
+  end
 
-    left_offset = (width() - pixmap.width()) / 2
-    top_offset = (height() - pixmap.height()) / 2
+  def self.max_width=(new_max)
+    @@max_width = new_max
+  end
 
-    painter.drawPixmap(left_offset, top_offset, pixmap)
+  def self.max_height
+    @@max_width * 3/4
+  end
+
+  def self.max_height=(new_max)
+    @@max_width = new_max * 4/3
+  end
+
+  def paint(painter, option, widget)
+    painter.fillRect(self.contentsRect(),
+                     @bg_color)
+
+    preview_image = @preview
+    if ((self.contentsRect.width() < preview_image.width()) or
+        (self.contentsRect.height() < preview_image.height()))
+      preview_image = preview_image.scaled(self.contentsRect.width(),
+                                           self.contentsRect.height(),
+                                           Qt::KeepAspectRatio,
+                                           Qt::SmoothTransformation)
+    end
+    painter.drawPixmap((self.contentsRect.width() - preview_image.width())/2,
+                       (self.contentsRect.height() - preview_image.height())/2,
+                       Qt::Pixmap.fromImage(preview_image))
   end
 end
 
